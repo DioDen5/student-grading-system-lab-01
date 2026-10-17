@@ -224,25 +224,25 @@ def build_report() -> None:
     )
     add_cover_paragraph(
         document,
-        "Виконав: Денис Заставний",
+        "Виконав(ла): Денис Заставний",
         after=10,
         left_indent=3.15,
     )
     add_cover_paragraph(
         document,
-        "Група: ___________________________________",
+        "Група: ФЕП-32",
         after=10,
         left_indent=3.15,
     )
     add_cover_paragraph(
         document,
-        "Перевірив(ла): ____________________________",
+        "Перевірив(ла): Свелеба Сергій Андрійович",
         after=10,
         left_indent=3.15,
     )
     add_cover_paragraph(
         document,
-        "Дата: ____________________________________",
+        "Дата: 17.10.2026",
         after=58,
         left_indent=3.15,
     )
