@@ -28,7 +28,7 @@ from create_lab02_report_assets import render_terminal
 
 ROOT = Path(__file__).resolve().parents[1]
 SOURCE_TEMPLATE = ROOT / "docs" / "Lab_01_Report_Variant_7.docx"
-OUTPUT = ROOT / "Звіт_ЛР02_варіант_7.docx"
+OUTPUT = ROOT / "report" / "Звіт_ЛР02_варіант_7.docx"
 
 sys.path.insert(0, str(ROOT / "src"))
 
@@ -175,6 +175,7 @@ def build_report() -> None:
     benchmark_results = run_benchmarks()
     build_benchmark_figure(benchmark_results)
 
+    OUTPUT.parent.mkdir(exist_ok=True)
     shutil.copy2(SOURCE_TEMPLATE, OUTPUT)
     document = Document(OUTPUT)
     clear_document_body(document)
@@ -309,7 +310,7 @@ def build_report() -> None:
         document,
         "student-grading-system/\n"
         "├── pyproject.toml, README.md, .gitignore\n"
-        "├── Звіт_ЛР02_варіант_7.docx\n"
+        "├── report/Звіт_ЛР02_варіант_7.docx\n"
         "├── src/student_grading/\n"
         "│   ├── models.py, data.py, services.py\n"
         "│   ├── processors.py, analytics.py\n"
