@@ -125,8 +125,7 @@ student-grading-system/
 ├── .gitignore
 ├── pyproject.toml
 ├── README.md
-├── report/
-│   └── Звіт_ЛР02_варіант_7.docx
+├── Звіт_ЛР02_варіант_7.docx
 ├── docs/
 │   ├── Lab_01_Report_Variant_7.docx
 │   └── screenshots/
