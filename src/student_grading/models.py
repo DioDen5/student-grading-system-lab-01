@@ -17,33 +17,20 @@ class StudentRecord:
     full_name: str
     subject: str
     grades: tuple[float, ...]
-    group: str
-    student_id: int | None
 
     def __init__(
         self,
         full_name: str,
         subject: str,
         grades: Iterable[float],
-        group: str = "ФеП-32",
-        student_id: int | None = None,
     ) -> None:
         normalized_name = full_name.strip()
         normalized_subject = subject.strip()
-        normalized_group = group.strip()
 
         if not normalized_name:
             raise GradeValidationError("Student full name must not be empty.")
         if not normalized_subject:
             raise GradeValidationError("Subject must not be empty.")
-        if not normalized_group:
-            raise GradeValidationError("Student group must not be empty.")
-        if student_id is not None and (
-            isinstance(student_id, bool)
-            or not isinstance(student_id, int)
-            or student_id <= 0
-        ):
-            raise GradeValidationError("Student ID must be a positive integer.")
 
         try:
             normalized_grades = tuple(float(grade) for grade in grades)
@@ -67,8 +54,6 @@ class StudentRecord:
         object.__setattr__(self, "full_name", normalized_name)
         object.__setattr__(self, "subject", normalized_subject)
         object.__setattr__(self, "grades", normalized_grades)
-        object.__setattr__(self, "group", normalized_group)
-        object.__setattr__(self, "student_id", student_id)
 
     @property
     def average_grade(self) -> float:
@@ -91,3 +76,4 @@ class StudentRecord:
 
 # A concise public name is convenient for imports and automated checks.
 Student = StudentRecord
+

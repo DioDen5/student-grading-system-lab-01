@@ -123,14 +123,12 @@ def search_students(
     *,
     name_query: str | None = None,
     subject: str | None = None,
-    group: str | None = None,
     minimum_average: float | None = None,
 ) -> list[StudentRecord]:
-    """Search by any combination of name, subject, group, and minimum average."""
+    """Search by any combination of name, subject, and minimum average."""
 
     normalized_name = name_query.strip().casefold() if name_query else None
     normalized_subject = subject.strip().casefold() if subject else None
-    normalized_group = group.strip().casefold() if group else None
     normalized_minimum = (
         _validate_threshold(minimum_average)
         if minimum_average is not None
@@ -145,7 +143,6 @@ def search_students(
             normalized_subject is None
             or student.subject.casefold() == normalized_subject
         )
-        and (normalized_group is None or student.group.casefold() == normalized_group)
         and (
             normalized_minimum is None
             or student.average_grade >= normalized_minimum
@@ -181,3 +178,4 @@ def _validate_threshold(value: float) -> float:
             f"The average threshold must be from {MIN_GRADE:g} to {MAX_GRADE:g}."
         )
     return threshold
+

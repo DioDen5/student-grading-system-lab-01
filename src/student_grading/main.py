@@ -4,30 +4,10 @@ from __future__ import annotations
 
 import argparse
 from collections.abc import Sequence
-from pathlib import Path
 
-from student_grading.analytics import (
-    aggregate_by_subject,
-    create_average_filter,
-    export_summary,
-    grade_distribution,
-)
-from student_grading.benchmark import format_benchmark_table, run_benchmarks
 from student_grading.config import DEFAULT_SEARCH_THRESHOLD
-from student_grading.data import load_demo_students
-from student_grading.decorators import recent_operations
 from student_grading.exceptions import GradeValidationError
 from student_grading.models import StudentRecord
-from student_grading.processors import (
-    count_subjects,
-    filter_items,
-    group_by_subject,
-    group_by_subject_and_group,
-    index_students_by_id,
-    process_pipeline,
-    sort_items,
-    unique_subjects,
-)
 from student_grading.services import (
     add_student,
     calculate_statistics,
@@ -41,7 +21,13 @@ from student_grading.services import (
 def create_demo_students() -> list[StudentRecord]:
     """Create deterministic data for demonstration and manual checks."""
 
-    return load_demo_students()
+    return [
+        StudentRecord("Анна Коваль", "Python", (92, 88, 95, 91)),
+        StudentRecord("Олег Мельник", "Python", (72, 76, 81, 79)),
+        StudentRecord("Ірина Бондар", "Бази даних", (96, 94, 98, 97)),
+        StudentRecord("Андрій Шевченко", "Python", (58, 63, 61, 60)),
+        StudentRecord("Марія Левченко", "Бази даних", (48, 55, 52, 57)),
+    ]
 
 
 def parse_grades(raw_value: str) -> tuple[float, ...]:
@@ -66,21 +52,16 @@ def print_students(
     """Print student records as a readable console table."""
 
     print(f"\n{title}")
-    print(
-        f"{'ID':>3} {'ПІБ':22} {'Група':8} {'Дисципліна':14} "
-        f"{'Сер.':>6} {'Мін.':>6} {'Макс.':>6} Статус"
-    )
-    print("-" * 97)
+    print(f"{'ПІБ':24} {'Дисципліна':16} {'Сер.':>6} {'Мін.':>6} {'Макс.':>6} Статус")
+    print("-" * 82)
     if not students:
         print("Записів не знайдено.")
         return
 
     for student in students:
         print(
-            f"{student.student_id or '-':>3} "
-            f"{student.full_name:22} "
-            f"{student.group:8} "
-            f"{student.subject:14} "
+            f"{student.full_name:24} "
+            f"{student.subject:16} "
             f"{student.average_grade:6.2f} "
             f"{student.minimum_grade:6.2f} "
             f"{student.maximum_grade:6.2f} "
@@ -93,10 +74,7 @@ def run_demo(threshold: float = DEFAULT_SEARCH_THRESHOLD) -> None:
 
     students = create_demo_students()
     print_students(students, title="УСІ ЗАПИСИ")
-    print_students(
-        sort_students(students),
-        title="РЕЙТИНГ ЗА СЕРЕДНІМ БАЛОМ",
-    )
+    print_students(sort_students(students), title="РЕЙТИНГ ЗА СЕРЕДНІМ БАЛОМ")
 
     above_threshold = find_students_above_average(students, threshold)
     print_students(
@@ -107,68 +85,10 @@ def run_demo(threshold: float = DEFAULT_SEARCH_THRESHOLD) -> None:
     statistics = calculate_statistics(students)
     print("\nЗАГАЛЬНА СТАТИСТИКА")
     print(f"Кількість записів: {statistics.record_count}")
-    print(
-        "Середній бал за всіма оцінками: "
-        f"{statistics.overall_average:.2f}"
-    )
+    print(f"Середній бал за всіма оцінками: {statistics.overall_average:.2f}")
     print(f"Мінімальна оцінка: {statistics.minimum_grade:.2f}")
     print(f"Максимальна оцінка: {statistics.maximum_grade:.2f}")
     print(f"Успішних студентів: {statistics.successful_count}")
-
-    grouped = group_by_subject(students)
-    nested = group_by_subject_and_group(students)
-    subject_statistics = aggregate_by_subject(students)
-    student_index = index_students_by_id(students)
-    minimum_filter = create_average_filter(threshold)
-    pipeline_result = process_pipeline(
-        students,
-        lambda records: filter_items(records, minimum_filter),
-        lambda records: sort_items(
-            records,
-            key=lambda student: student.average_grade,
-            reverse=True,
-        ),
-    )
-
-    print("\nСТРУКТУРИ ДАНИХ І ФУНКЦІОНАЛЬНА ДЕКОМПОЗИЦІЯ")
-    print(
-        "Унікальні дисципліни (set): "
-        f"{sorted(unique_subjects(students))}"
-    )
-    print(f"Counter дисциплін: {dict(count_subjects(students))}")
-    print(f"Counter оцінок: {dict(grade_distribution(students).most_common(5))}")
-    group_sizes = {key: len(value) for key, value in grouped.items()}
-    print(f"Групування за дисциплінами: {group_sizes}")
-    print(
-        "Вкладене групування: "
-        + str(
-            {
-                subject: {
-                    group: len(records)
-                    for group, records in groups.items()
-                }
-                for subject, groups in nested.items()
-            }
-        )
-    )
-    print(f"Пошук у dict-index за ID=3: {student_index[3].full_name}")
-    print(
-        "Агрегація за дисциплінами: "
-        + str(
-            {
-                subject: round(values.average_grade, 2)
-                for subject, values in subject_statistics.items()
-            }
-        )
-    )
-    print(
-        "Pipeline (closure + filter + lambda sort): "
-        + ", ".join(student.full_name for student in pipeline_result)
-    )
-    print(
-        "Історія операцій (deque): "
-        + ", ".join(name for name, _elapsed in recent_operations())
-    )
 
 
 def print_menu() -> None:
@@ -219,22 +139,8 @@ def run_menu(students: list[StudentRecord] | None = None) -> None:
 def _add_student_from_input(students: list[StudentRecord]) -> None:
     full_name = input("ПІБ: ").strip()
     subject = input("Дисципліна: ").strip()
-    group = input("Група: ").strip()
     grades = parse_grades(input("Оцінки через кому: "))
-    next_id = max(
-        (student.student_id or 0 for student in students),
-        default=0,
-    ) + 1
-    add_student(
-        students,
-        StudentRecord(
-            full_name,
-            subject,
-            grades,
-            group=group,
-            student_id=next_id,
-        ),
-    )
+    add_student(students, StudentRecord(full_name, subject, grades))
     print("Запис додано.")
 
 
@@ -253,7 +159,6 @@ def _find_above_threshold_from_input(students: list[StudentRecord]) -> None:
 def _search_from_input(students: list[StudentRecord]) -> None:
     name_query = input("Частина ПІБ або Enter: ").strip() or None
     subject = input("Дисципліна або Enter: ").strip() or None
-    group = input("Група або Enter: ").strip() or None
     raw_average = input("Мінімальний середній бал або Enter: ").strip()
     minimum_average: float | None = None
     if raw_average:
@@ -269,7 +174,6 @@ def _search_from_input(students: list[StudentRecord]) -> None:
             students,
             name_query=name_query,
             subject=subject,
-            group=group,
             minimum_average=minimum_average,
         ),
         title="РЕЗУЛЬТАТ ПОШУКУ",
@@ -295,17 +199,6 @@ def build_parser() -> argparse.ArgumentParser:
         help="відкрити інтерактивне меню",
     )
     parser.add_argument(
-        "--benchmark",
-        action="store_true",
-        help="порівняти пошук у list і dict для 1 000-100 000 записів",
-    )
-    parser.add_argument(
-        "--export-summary",
-        type=Path,
-        metavar="PATH",
-        help="експортувати JSON-підсумок демонстраційних даних",
-    )
-    parser.add_argument(
         "--threshold",
         type=float,
         default=DEFAULT_SEARCH_THRESHOLD,
@@ -322,19 +215,8 @@ def main(argv: Sequence[str] | None = None) -> None:
         run_menu()
         return
 
-    if arguments.benchmark:
-        print("BENCHMARK: ПОШУК У LIST ПРОТИ DICT")
-        print(format_benchmark_table(run_benchmarks()))
-        return
-
     try:
         run_demo(arguments.threshold)
-        if arguments.export_summary is not None:
-            output = export_summary(
-                arguments.export_summary,
-                create_demo_students(),
-            )
-            print(f"Підсумок експортовано: {output}")
     except GradeValidationError as error:
         raise SystemExit(f"Помилка: {error}") from error
 
