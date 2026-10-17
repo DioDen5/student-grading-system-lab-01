@@ -127,6 +127,9 @@ student-grading-system/
 ├── README.md
 ├── report/
 │   └── Звіт_ЛР02_варіант_7.docx
+├── Lab_02/
+│   └── report/
+│       └── report.docx
 ├── docs/
 │   ├── Lab_01_Report_Variant_7.docx
 │   └── screenshots/
