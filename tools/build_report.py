@@ -224,13 +224,13 @@ def build_report() -> None:
     )
     add_cover_paragraph(
         document,
-        "Виконав(ла): Денис Заставний",
+        "Виконав: Заставний Денис",
         after=10,
         left_indent=3.15,
     )
     add_cover_paragraph(
         document,
-        "Група: ФЕП-32",
+        "Група: ФеП-32",
         after=10,
         left_indent=3.15,
     )
@@ -472,7 +472,7 @@ def build_report() -> None:
         "Лабораторна робота №1 з курсу «Професійний Python».\n"
         "Варіант №7 — «Система оцінювання студентів».\n\n"
         "## Автор\n"
-        "Денис Заставний\n\n"
+        "Заставний Денис\n\n"
         "## Встановлення\n"
         "python3 -m venv .venv\n"
         "source .venv/bin/activate\n"

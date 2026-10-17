@@ -1,0 +1,79 @@
+"""Data models for student assessment records."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from math import isfinite
+from typing import Iterable
+
+from student_grading.config import MAX_GRADE, MIN_GRADE
+from student_grading.exceptions import GradeValidationError
+
+
+@dataclass(frozen=True, slots=True)
+class StudentRecord:
+    """Grades earned by one student in one academic subject."""
+
+    full_name: str
+    subject: str
+    grades: tuple[float, ...]
+
+    def __init__(
+        self,
+        full_name: str,
+        subject: str,
+        grades: Iterable[float],
+    ) -> None:
+        normalized_name = full_name.strip()
+        normalized_subject = subject.strip()
+
+        if not normalized_name:
+            raise GradeValidationError("Student full name must not be empty.")
+        if not normalized_subject:
+            raise GradeValidationError("Subject must not be empty.")
+
+        try:
+            normalized_grades = tuple(float(grade) for grade in grades)
+        except (TypeError, ValueError) as error:
+            raise GradeValidationError("Every grade must be a number.") from error
+
+        if not normalized_grades:
+            raise GradeValidationError("At least one grade is required.")
+
+        invalid_grades = [
+            grade
+            for grade in normalized_grades
+            if not isfinite(grade) or not MIN_GRADE <= grade <= MAX_GRADE
+        ]
+        if invalid_grades:
+            raise GradeValidationError(
+                f"Grades must be finite numbers from {MIN_GRADE:g} "
+                f"to {MAX_GRADE:g}. Invalid values: {invalid_grades}"
+            )
+
+        object.__setattr__(self, "full_name", normalized_name)
+        object.__setattr__(self, "subject", normalized_subject)
+        object.__setattr__(self, "grades", normalized_grades)
+
+    @property
+    def average_grade(self) -> float:
+        """Return the arithmetic mean of all grades."""
+
+        return sum(self.grades) / len(self.grades)
+
+    @property
+    def minimum_grade(self) -> float:
+        """Return the lowest grade."""
+
+        return min(self.grades)
+
+    @property
+    def maximum_grade(self) -> float:
+        """Return the highest grade."""
+
+        return max(self.grades)
+
+
+# A concise public name is convenient for imports and automated checks.
+Student = StudentRecord
+
