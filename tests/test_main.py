@@ -32,6 +32,8 @@ def test_demo_contains_required_results(capsys: pytest.CaptureFixture[str]) -> N
     assert "Мінімальна оцінка" in output
     assert "Максимальна оцінка" in output
     assert "Успішних студентів" in output
+    assert "СТРУКТУРИ ДАНИХ І ФУНКЦІОНАЛЬНА ДЕКОМПОЗИЦІЯ" in output
+    assert "Пошук у dict-index за ID=3" in output
 
 
 def test_main_rejects_invalid_threshold() -> None:
@@ -56,6 +58,7 @@ def test_menu_covers_all_commands(
             "2",
             "Тестовий Студент",
             "Python",
+            "ФеП-32",
             "80, 90",
             "1",
             "3",
@@ -64,6 +67,7 @@ def test_menu_covers_all_commands(
             "5",
             "тест",
             "Python",
+            "ФеП-32",
             "70",
             "6",
             "9",
@@ -88,9 +92,9 @@ def test_menu_covers_all_commands(
 @pytest.mark.parametrize(
     "answers",
     [
-        ["2", "", "Python", "80", "0"],
+        ["2", "", "Python", "ФеП-32", "80", "0"],
         ["4", "not-a-number", "0"],
-        ["5", "", "", "not-a-number", "0"],
+        ["5", "", "", "", "not-a-number", "0"],
     ],
 )
 def test_menu_reports_validation_errors(
@@ -124,3 +128,26 @@ def test_main_routes_to_interactive_menu(monkeypatch: pytest.MonkeyPatch) -> Non
     main(["--interactive"])
 
     assert called
+
+
+def test_main_routes_to_benchmark(
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    monkeypatch.setattr("student_grading.main.run_benchmarks", lambda: [])
+
+    main(["--benchmark"])
+
+    assert "BENCHMARK" in capsys.readouterr().out
+
+
+def test_main_exports_summary(
+    tmp_path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    output = tmp_path / "summary.json"
+
+    main(["--export-summary", str(output)])
+
+    assert output.exists()
+    assert "експортовано" in capsys.readouterr().out

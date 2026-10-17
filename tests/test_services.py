@@ -19,9 +19,9 @@ from student_grading.services import (
 @pytest.fixture
 def students() -> list[StudentRecord]:
     return [
-        StudentRecord("Анна Коваль", "Python", [95, 85]),
-        StudentRecord("Олег Мельник", "Python", [70, 80]),
-        StudentRecord("Ірина Бондар", "Бази даних", [55, 60]),
+        StudentRecord("Анна Коваль", "Python", [95, 85], group="ФеП-32"),
+        StudentRecord("Олег Мельник", "Python", [70, 80], group="ФеП-31"),
+        StudentRecord("Ірина Бондар", "Бази даних", [55, 60], group="ФеП-32"),
     ]
 
 
@@ -91,6 +91,7 @@ def test_search_by_multiple_criteria(students: list[StudentRecord]) -> None:
         subject="PYTHON",
         minimum_average=80,
     ) == [students[0]]
+    assert search_students(students, group="феп-32") == [students[0], students[2]]
 
 
 def test_statistics(students: list[StudentRecord]) -> None:
@@ -106,4 +107,3 @@ def test_statistics(students: list[StudentRecord]) -> None:
 def test_statistics_rejects_empty_collection() -> None:
     with pytest.raises(GradeValidationError):
         calculate_statistics([])
-

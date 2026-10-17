@@ -7,11 +7,19 @@ from student_grading.models import StudentRecord
 
 
 def test_student_record_normalizes_text_and_grades() -> None:
-    student = StudentRecord("  Анна Коваль ", " Python ", [90, 80.5, 70])
+    student = StudentRecord(
+        "  Анна Коваль ",
+        " Python ",
+        [90, 80.5, 70],
+        group=" ФеП-32 ",
+        student_id=7,
+    )
 
     assert student.full_name == "Анна Коваль"
     assert student.subject == "Python"
     assert student.grades == (90.0, 80.5, 70.0)
+    assert student.group == "ФеП-32"
+    assert student.student_id == 7
 
 
 def test_grade_properties() -> None:
@@ -49,3 +57,18 @@ def test_non_numeric_grade_preserves_exception_context() -> None:
 
     assert isinstance(exception_info.value.__cause__, ValueError)
 
+
+@pytest.mark.parametrize("student_id", [0, -1, 1.5, True])
+def test_invalid_student_id_is_rejected(student_id: object) -> None:
+    with pytest.raises(GradeValidationError):
+        StudentRecord(
+            "Анна Коваль",
+            "Python",
+            [80],
+            student_id=student_id,  # type: ignore[arg-type]
+        )
+
+
+def test_empty_group_is_rejected() -> None:
+    with pytest.raises(GradeValidationError):
+        StudentRecord("Анна Коваль", "Python", [80], group=" ")

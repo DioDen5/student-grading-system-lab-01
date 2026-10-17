@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "student-grading-system"
-version = "0.1.0"
-description = "Laboratory work 1, variant 7: student grading system"
+version = "0.2.0"
+description = "Laboratory works 1-2, variant 7: student grading analytics"
 readme = "README.md"
 requires-python = ">=3.11"
 
